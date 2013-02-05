@@ -44,7 +44,7 @@ task 'watch', 'compile and watch', ->
   build true, -> log "watching for changes", green
 
 task 'test', 'run tests', ->
-  build -> mocha -> log "tests complete", green
+  mocha -> log "tests complete", green
 
 task 'dist', 'create distribution', ->
   # TODO: include docs

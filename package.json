@@ -23,7 +23,7 @@
     "url": "git@github.com:chalaschek/connects.io.git"
   },
   "scripts": {
-    "intall": "cake all",
+    "postinstall": "cake build",
     "test": "cake test"
   }
 }
