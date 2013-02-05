@@ -15,7 +15,8 @@
   "devDependencies": {
     "mocha": "*",
     "wrench": "*",
-    "expect.js": "*"
+    "expect.js": "*",
+    "docco": "*"
   },
   "repository": {
     "type": "git",
