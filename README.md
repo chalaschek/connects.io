@@ -1,4 +1,53 @@
-connects.io
-===========
+# **connects.io**
 
-connects.io
+Removing the complex from event processing for [node](http://nodejs.org).
+
+## Overview
+
+connects.io is a leightwieght stream processing framework that provides capabilities found in complex event processing systems.
+
+It is designed for usecases that require something in between distributed, real-time stream processing engines such as [Storm](https://github.com/nathanmarz/storm) & [Esper](http://esper.codehaus.org/) and simpler tools such as [statsd](https://github.com/etsy/statsd/) & [eep-js](https://github.com/darach/eep-js).
+
+## Features
+- JSON in and out
+- Operators that compute on sliding windows of stream
+- Filters (mongo-like patterns and complex functions)
+- Triggers
+
+
+## Installation
+
+> Coming soon.
+
+## Usage
+
+> Coming soon.
+
+## Inspiration
+
+connects.io was inspired by the likes of [eep-js](https://github.com/darach/eep-js) & [statsd](https://github.com/etsy/statsd/), as well as their heavier weight relatives such as [Storm](https://github.com/nathanmarz/storm), [Esper](http://esper.codehaus.org/), [HStreaming](http://www.hstreaming.com/), & [StreamBase](http://www.streambase.com/).
+
+## License
+
+(The MIT License)
+
+Copyright (c) 2013 Christian Halaschek-Wiener <chalaschek@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
