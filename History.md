@@ -1,4 +1,8 @@
-0.0.1 / 2013-02-04
+0.0.1 / 2013-02-05
 ==================
 
-  * Initial release
+  * Docs
+  * Test placeholder
+  * Cakefile
+  * Readme
+  * Initial commit

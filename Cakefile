@@ -38,7 +38,7 @@ task 'doc', 'generate documentation', ->
   docco -> log "docs complete", green
 
 task 'build', 'compile source', ->
-  build -> log "build complete", green
+  lint -> build -> log "build complete", green
 
 task 'watch', 'compile and watch', ->
   build true, -> log "watching for changes", green
@@ -57,6 +57,8 @@ task 'all', 'fresh install', ->
   # TODO: include docs
   clean -> install -> build -> mocha -> docco -> log "fresh install complete", green
 
+task 'lint', 'coffeelint', ->
+  lint -> log "coffeelint complete", green
 
 moduleExists = (name) ->
   try 
@@ -162,6 +164,19 @@ walk = (dir, done) ->
       else
         results.push file
         done(null, results) unless --pending
+
+
+lint = (callback) ->
+  log 'coffeelinting', blue
+
+  async   = moduleExists "async"
+  return unless moduleExists('coffeelint') and async
+
+  walk "src", (error, files) ->
+    if error then return log "Error reading src: #{err}", red
+    async.forEach files, (file, cb) ->
+      launch './node_modules/coffeelint/bin/coffeelint', ["-f", "coffeelint.json", file] , callback
+    , callback
 
 
 docco = (callback) ->
