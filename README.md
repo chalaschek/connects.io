@@ -6,7 +6,7 @@
      \___\___/|_| |_|_| |_|\___|\___|\__|___(_|_|\___/ 
                                                     
 
-Realtime event processing for [node](http://nodejs.org).
+Realtime event processing for [node](http://nodejs.org). [![Build Status](https://secure.travis-ci.org/chalaschek/connects.io.png)](http://travis-ci.org/chalaschek/connects.io)
 
 ## Overview
 
