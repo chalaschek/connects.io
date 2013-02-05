@@ -6,20 +6,19 @@
      \___\___/|_| |_|_| |_|\___|\___|\__|___(_|_|\___/ 
                                                     
 
-Removing the complex from event processing for [node](http://nodejs.org).
+Realtime event processing for [node](http://nodejs.org).
 
 ## Overview
 
-connects.io is a leightwieght stream processing framework that provides capabilities found in complex event processing systems.
+connects.io is a lightweight event processing framework that provides node with event stream filtering and aggregation capabilities similar to those found in complex event processing systems.
 
-It is designed for usecases that require something in between distributed, real-time stream processing engines such as [Storm](https://github.com/nathanmarz/storm) & [Esper](http://esper.codehaus.org/) and simpler tools such as [statsd](https://github.com/etsy/statsd/) & [eep-js](https://github.com/darach/eep-js).
+It is designed for usecases that require something in between distributed stream processing engines such as [Storm](https://github.com/nathanmarz/storm) & [Esper](http://esper.codehaus.org/) and simpler tools such as [statsd](https://github.com/etsy/statsd/) & [eep-js](https://github.com/darach/eep-js).
 
 ## Features
 - JSON in and out
 - Operators that compute on sliding windows of stream
 - Filters (mongo-like patterns and complex functions)
 - Triggers
-
 
 ## Installation
 

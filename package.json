@@ -1,0 +1,23 @@
+{
+  "name": "connects.io",
+  "description": "Realtime event processing for Node.js",
+  "version": "1.0.0",
+  "author": "Christian Halaschek-Wiener <chalaschek@gmail.com>",
+  "keywords": [
+    "realtime",
+    "event",
+    "stream",
+    "cep"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "expect.js": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:chalaschek/connects.io.git"
+  },
+  "main": "index"
+}
