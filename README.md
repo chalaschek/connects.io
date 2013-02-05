@@ -31,7 +31,7 @@ connects.io was inspired by the likes of [eep-js](https://github.com/darach/eep-
 
 (The MIT License)
 
-Copyright (c) 2013 Christian Halaschek-Wiener <chalaschek@gmail.com>
+Copyright (c) 2013 Christian Halaschek-Wiener &lt;chalaschek@gmail.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
