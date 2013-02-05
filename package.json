@@ -3,11 +3,9 @@
   "description": "Realtime event processing for Node.js",
   "version": "0.0.2",
   "author": "Christian Halaschek-Wiener <chalaschek@gmail.com>",
-  "keywords": [
-    "realtime",
-    "event",
-    "stream",
-    "cep"
+  "keywords": ["realtime", "event", "stream","cep"],
+  "contributors": [
+    "Bernardo Gomez Palacio <bernardo.gomezpalacio@gmail.com>"
   ],
   "dependencies": {
     "async": "*"
