@@ -142,7 +142,8 @@ mocha = (options, callback) ->
   options.push '--compilers'
   options.push 'coffee:coffee-script'
   
-  launch 'mocha', options, callback
+  launch 'mocha', options, (status) ->
+    if status == 0 then callback?() else process.exit status
 
 
 walk = (dir, done) ->
