@@ -19,7 +19,7 @@ class TwitterSpout extends Spout
     @_stream = @_twitter.stream 'statuses/sample'
 
     @_stream.on 'tweet', (tweet) =>
-     @emit "event:new", tweet
+      @emit "event:new", tweet
 
     @_stream.on 'warning', () => console.log "warning"
 
