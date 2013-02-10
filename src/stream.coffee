@@ -2,7 +2,10 @@ Connect = require './connect'
 
 class Stream extends Connect
 
-  execute : (data) ->
-    return data
+  constructor : (stream) ->
+    super stream
+
+  process : (data) ->
+    @emit "event:new", data
 
 module.exports = Stream

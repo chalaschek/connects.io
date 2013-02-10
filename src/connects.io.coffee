@@ -6,6 +6,13 @@ module.exports =
 
   TwitterSpout: require "./twitter-spout"
 
+  Aggregator : require "./aggregator"
+
+  SumStat : require "./sum-stat"
+
+  CountStat : require "./count-stat"
+
+  SlidingTimeWindow : require("./sliding-window").SlidingTimeWindow
 
 spout1 = new module.exports.TwitterSpout
   #"consumer_key": "66ST16sJgjJdHekmhM3LnA"
@@ -31,7 +38,28 @@ spout1 = new module.exports.TwitterSpout
 #   merge
 #   join
 
+notags = 0
 
+connect = new module.exports.Stream(spout1)
+          #.filter( (data, cb) -> 
+          #  return cb null, data if Math.random() > .5
+          #  return cb()
+          #)
+          .project( (data, cb) ->
+            tags = []
+            for tag in data.entities?.hashtags
+              _norm = tag.text.toLowerCase()
+              if _norm is "lol" or _norm is "rice" then tags.push _norm
+            #tags = data.entities?.hashtags?.map (tag) -> tag.text.toLowerCase()
+            return cb null, {id: data?.id, tags: tags} )
+          .inject( ( data, cb)-> return cb null, {injectDate: new Date(), text: "I love #{data.tags.join(' ')}"} )
+          .aggregate( new module.exports.Aggregator
+            window          : new module.exports.SlidingTimeWindow 5000
+            stats           : [ new module.exports.SumStat("id"), new module.exports.CountStat("id") ]
+            cumulative      : false
+            groupBy         : "tags"
+            emitFrequency   : 500
+          )
+          .sink (data) ->
+            console.log data
 
-
-connect = new module.exports.Stream(spout1).project( (data) -> return data.id_str ).sink( (data) -> console.log data )
