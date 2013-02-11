@@ -10,14 +10,15 @@ SingletonWindow = require "../lib/singleton-window"
 
 describe "Aggregator", ->
   describe "Default Configuration", ->
-    agg = new Aggregator
-      stats           : [ new SumStat("val"), new CountStat("val") ]
-
     it "should use a singleton window by default", () ->
+      agg = new Aggregator
+        stats           : [ new SumStat("val"), new CountStat("val") ]
       val = agg.window instanceof SingletonWindow
       val.should.eql true
 
     it "should emit aggregates upon new data by default", (done) ->
+      agg = new Aggregator
+        stats           : [ new SumStat("val"), new CountStat("val") ]
       agg.on "data:new", (data) ->
         should.exist data
         data.sum.should.eql 10

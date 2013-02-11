@@ -6,18 +6,18 @@
      \___\___/|_| |_|_| |_|\___|\___|\__|___(_|_|\___/ 
                                                     
 
-Realtime event processing for [node](http://nodejs.org). [![Build Status](https://secure.travis-ci.org/chalaschek/connects.io.png?branch=master)](http://travis-ci.org/chalaschek/connects.io)
+Simple data stream processing and pipelining for [node](http://nodejs.org). [![Build Status](https://secure.travis-ci.org/chalaschek/connects.io.png?branch=master)](http://travis-ci.org/chalaschek/connects.io)
 
 ## Overview
 
 connects.io is a lightweight event processing framework that provides node with event stream filtering and aggregation capabilities similar to those found in complex event processing systems.
 
-It is designed for usecases that require something in between distributed stream processing engines such as [Storm](https://github.com/nathanmarz/storm) & [Esper](http://esper.codehaus.org/) and simpler tools such as [statsd](https://github.com/etsy/statsd/) & [eep-js](https://github.com/darach/eep-js).
+It is designed to easily connect data tranformations into a pipeline and is inteded for usecases that require something in between distributed stream processing engines such as [Storm](https://github.com/nathanmarz/storm) & [Esper](http://esper.codehaus.org/) and simpler tools such as [statsd](https://github.com/etsy/statsd/) & [eep-js](https://github.com/darach/eep-js).
 
 ## Features
 - JSON in and out
 - Operators that compute on sliding windows of stream
-- Filters (mongo-like patterns and complex functions)
+- Filters (complex functions and mongo-like patterns down the road)
 - Triggers
 
 ## Installation

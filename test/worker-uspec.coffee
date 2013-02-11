@@ -115,12 +115,15 @@ describe "Worker", ->
         val: 0
 
     it "should invoke aggregator and emit aggregates", (done) ->
+      _done = false
       aggregateWorker.on "data:new", (data) ->
         should.exist data?.sum
         data.sum.should.eql 10
         should.exist data?.count
         data.count.should.eql 2
-        done()
+        if not _done
+          _done = true
+          done()
 
       aggregateWorker.process
         val: 10
