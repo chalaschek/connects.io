@@ -13,4 +13,3 @@ describe "Spout", ->
 
     spout.emit "data:new",
       key: "test"
-

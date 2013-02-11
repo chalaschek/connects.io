@@ -26,12 +26,10 @@ class Aggregator extends EventEmitter
   _initWindowListeners : () ->
 
     @window.on "data:push", (events) =>
-      #console.log "got push"
       @_accumulate events
 
     if not @cumulative
       @window.on "data:pop", (events) =>
-        #console.log "got pop"
         @_offset events
 
 
@@ -41,8 +39,14 @@ class Aggregator extends EventEmitter
         @emit "data:new", @value()
       , @emitFrequency
     else
-      @on "aggregate:updated", (data) =>
-        @emit "data:new", data
+      @on "aggregate:updated:accumulate", (data) =>
+        @emit "data:new", @value()
+
+      @on "aggregate:updated:offset", (data) =>
+        # only emit event if this is not a singleton window
+        # in that case it will be triggered by the accumulate method associated with the push
+        if not (@window instanceof SingletoneWindow) then @emit "data:new", @value()
+
 
 
   _accumulate : (events) ->
@@ -72,7 +76,7 @@ class Aggregator extends EventEmitter
           # perform aggregate calc
           @aggregate[stat.outputName] = stat.accumulate @aggregate[stat.outputName], data[stat.aggregateField]
 
-    @emit "aggregate:updated"
+    @emit "aggregate:updated:accumulate"
 
   _offset : (events) ->
     return if @cumulative
@@ -99,7 +103,7 @@ class Aggregator extends EventEmitter
           # perform aggregate calc
           @aggregate[stat.outputName] = stat.offset @aggregate[stat.outputName], data[stat.aggregateField]
 
-    @emit "aggregate:updated"
+    @emit "aggregate:updated:offset"
 
 
 

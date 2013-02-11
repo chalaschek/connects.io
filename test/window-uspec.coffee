@@ -36,7 +36,7 @@ describe "Window", ->
       singletonWindow.process
         val: 1
 
-    it "should trigger push event", (done) ->
+    it "should trigger pop event", (done) ->
       singletonWindow = new SingletonWindow()
       
       singletonWindow.process
@@ -81,7 +81,7 @@ describe "Window", ->
       slidingTimeWindow.process
         val: 1
 
-    it "should trigger push event", (done) ->
+    it "should trigger pop event", (done) ->
       slidingTimeWindow = new SlidingTimeWindow 1
 
       slidingTimeWindow.on "data:pop", (elements) ->
@@ -122,7 +122,6 @@ describe "Window", ->
 
       setTimeout () ->
         events = slidingTimeWindow.events()
-        #console.log events
         events.length.should.eql 1
         events[0].val.should.eql 1
         done()

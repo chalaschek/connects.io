@@ -14,7 +14,7 @@ class SlidingWindow extends Window
     super()
 
   events: () ->
-    return @_events
+    return @_window
 
   purge : () -> return new Error "Method must be implemented"
 
@@ -51,12 +51,11 @@ class SlidingTimeWindow extends SlidingWindow
       else
         break
 
-    #console.log @_events.length
     if _events.length > 0
       # trigger push event
-      @emit "data:pop", _events
       # remove from events
       @_window = @_window.slice i
+      @emit "data:pop", _events
   
   process : (data) ->
     #console.log "sliding window processing data"
