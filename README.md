@@ -28,20 +28,6 @@ It is designed for usecases that require something in between distributed stream
 
 > Coming soon.
 
-> Operators
->   filters
->   injectors (storms calls these functions)
->   project
->   aggregators
->     storm supports combinerAggregtor, reducerAggregtor and aggregator
->     storm also allows chaining aggregagators to emit mulitple aggregates over same partition
->     perhaps this can all be simplified by providing default aggregators as well as an aggregote interface
->       also each aggregator could be provided a window type (sliding, tumbling), length/time, and emit frequency
->     groupBy streams?
->   merge
->   join
-
-
 ## Inspiration
 
 connects.io was inspired by the likes of [eep-js](https://github.com/darach/eep-js) & [statsd](https://github.com/etsy/statsd/), as well as their heavier weight relatives such as [Storm](https://github.com/nathanmarz/storm), [Esper](http://esper.codehaus.org/), [HStreaming](http://www.hstreaming.com/), & [StreamBase](http://www.streambase.com/).

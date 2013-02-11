@@ -3,3 +3,5 @@ docs/
 examples/
 test/
 .DS_Store
+.twitter-example.js
+.notes.md
