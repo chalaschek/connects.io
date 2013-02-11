@@ -9,7 +9,7 @@ class AggregateWorker extends Worker
     @_initEmitter()
 
   _initEmitter : () ->
-    @aggregator.on "event:new", (data) => @emit "event:new", data
+    @aggregator.on "data:new", (data) => @emit "data:new", data
 
   process : (data) ->
     try

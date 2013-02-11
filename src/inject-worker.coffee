@@ -14,7 +14,7 @@ class InjectWorker extends Worker
     try
       @operator data, (error, inject) =>
         # TODO: consider cloning data
-        @emit "event:new", @_extend inject, data
+        @emit "data:new", @_extend inject, data
     catch e
       if e then console.log "#{@_id} error: #{e}"
 

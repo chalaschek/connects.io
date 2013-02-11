@@ -141,6 +141,8 @@ mocha = (options, callback) ->
   # add coffee directive
   options.push '--compilers'
   options.push 'coffee:coffee-script'
+  options.push '--reporter'
+  options.push 'spec'
   
   launch 'mocha', options, (status) ->
     if status == 0 then callback?() else process.exit status

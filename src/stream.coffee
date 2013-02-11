@@ -6,6 +6,6 @@ class Stream extends Connect
     super stream
 
   process : (data) ->
-    @emit "event:new", data
+    @emit "data:new", data
 
 module.exports = Stream

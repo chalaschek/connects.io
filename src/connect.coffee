@@ -18,8 +18,8 @@ class Connect extends EventEmitter
   _initWorker : () ->
     return unless @worker
 
-    @worker.on "event:new", (data) =>
-      @emit "event:new", data
+    @worker.on "data:new", (data) =>
+      @emit "data:new", data
       sink data for sink in @_sinks
 
 
@@ -45,7 +45,7 @@ class Connect extends EventEmitter
 
   _connectStream : () ->
     return unless @stream
-    @stream.on "event:new", (data) =>
+    @stream.on "data:new", (data) =>
       @process data
 
 module.exports = Connect

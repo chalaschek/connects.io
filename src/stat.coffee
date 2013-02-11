@@ -11,4 +11,36 @@ class Stat
 
   offset : (currentAggregateValue, oldValue) -> return new Error "Method must be implemented"
 
-module.exports = Stat
+
+
+class SumStat extends Stat
+
+  id : "sum_stat"
+
+  defaultOutputName : "sum"
+
+  accumulate : (currentAggregateValue, newValue) ->
+    return currentAggregateValue + newValue
+
+  offset : (currentAggregateValue, oldValue) ->
+    return currentAggregateValue - oldValue
+
+
+class CountStat extends Stat
+
+  id : "count_stat"
+
+  defaultOutputName : "count"
+
+  accumulate : (currentAggregateValue, newValue) ->
+    return currentAggregateValue + 1
+
+  offset : (currentAggregateValue, oldValue) ->
+    return currentAggregateValue - 1
+
+
+
+module.exports =
+  Stat      : Stat
+  SumStat   : SumStat
+  CountStat : CountStat

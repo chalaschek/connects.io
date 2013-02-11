@@ -18,10 +18,10 @@ class SingletoneWindow extends Window
 
   process : (data) ->
     # trigger pop event
-    if @_event then @emit "event:pop", [@_event]
+    if @_event then @emit "data:pop", [@_event]
     # set current event pointer
     @_event = data
     # trigger push event
-    @emit "event:push", [data]
+    @emit "data:push", [data]
 
 module.exports = SingletoneWindow

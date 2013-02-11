@@ -8,7 +8,7 @@ class ProjectWorker extends Worker
 
   process : (data) ->
     try
-      @operator data, (error, projected) => @emit "event:new", projected
+      @operator data, (error, projected) => @emit "data:new", projected
     catch e
       if e then console.log "#{@_id} error: #{e}"
 

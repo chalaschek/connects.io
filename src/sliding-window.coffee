@@ -3,7 +3,7 @@ Window  = require './window'
 ###
 #
 # Windows accumulate a subset of a stream. Each window must
-# implement the process method and emit "event:push" and "event:pop" events
+# implement the process method and emit "data:push" and "data:pop" events
 #
 ###
 class SlidingWindow extends Window
@@ -38,7 +38,7 @@ class SlidingTimeWindow extends SlidingWindow
     , @windowPurgeInterval
 
   events: () ->
-    return @_window
+    return @_window.map (ev) -> return ev.data
 
   purge : () ->
     # TODO: migrate to b+ index
@@ -46,7 +46,7 @@ class SlidingTimeWindow extends SlidingWindow
     _events = []
     # find events to remove
     for entry, i in @_window
-      if now - entry.timestamp > @n
+      if now - entry.timestamp >= @n
         _events.push entry.data
       else
         break
@@ -54,7 +54,7 @@ class SlidingTimeWindow extends SlidingWindow
     #console.log @_events.length
     if _events.length > 0
       # trigger push event
-      @emit "event:pop", _events
+      @emit "data:pop", _events
       # remove from events
       @_window = @_window.slice i
   
@@ -68,7 +68,7 @@ class SlidingTimeWindow extends SlidingWindow
     # TODO: index data
 
     # trigger push event
-    @emit "event:push", [data]
+    @emit "data:push", [data]
 
 
 

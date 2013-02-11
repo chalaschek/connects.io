@@ -25,12 +25,12 @@ class Aggregator extends EventEmitter
 
   _initWindowListeners : () ->
 
-    @window.on "event:push", (events) =>
+    @window.on "data:push", (events) =>
       #console.log "got push"
       @_accumulate events
 
     if not @cumulative
-      @window.on "event:pop", (events) =>
+      @window.on "data:pop", (events) =>
         #console.log "got pop"
         @_offset events
 
@@ -38,20 +38,18 @@ class Aggregator extends EventEmitter
   _initEmitter : () ->
     if @emitFrequency
       @_interval = setInterval () =>
-        @emit "event:new", @value()
+        @emit "data:new", @value()
       , @emitFrequency
     else
       @on "aggregate:updated", (data) =>
-        @emit "event:new", data
+        @emit "data:new", data
 
 
   _accumulate : (events) ->
-    #console.log "accumulating"
-    #console.log events
     # handle each stat
     for stat in @stats
       for data in events
-        continue unless data?[stat.aggregateField]
+        continue unless data?[stat.aggregateField] isnt null
 
         if @groupBy
           # if not field to group by then ignore
@@ -78,12 +76,10 @@ class Aggregator extends EventEmitter
 
   _offset : (events) ->
     return if @cumulative
-    #console.log "offsetting"
-
     # handle each stat
     for stat in @stats
       for data in events
-        continue unless data?[stat.aggregateField]
+        continue unless data?[stat.aggregateField] isnt null
         # handle group bys
         if @groupBy
           # if not field to group by then ignore

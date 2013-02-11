@@ -8,7 +8,7 @@ class FilterWorker extends Worker
 
   process : (data) ->
     try
-      @operator data, (error, data) =>  if data then @emit "event:new", data
+      @operator data, (error, data) =>  if data then @emit "data:new", data
     catch e
       if e then console.log "#{@_id} error: #{e}"
 

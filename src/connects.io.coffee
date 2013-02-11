@@ -1,3 +1,5 @@
+{SumStat, CountStat} = require "./stat"
+
 module.exports =
 
   Spout: require "./spout"
@@ -8,9 +10,9 @@ module.exports =
 
   Aggregator : require "./aggregator"
 
-  SumStat : require "./sum-stat"
+  SumStat : SumStat
 
-  CountStat : require "./count-stat"
+  CountStat : CountStat
 
   SlidingTimeWindow : require("./sliding-window").SlidingTimeWindow
 
@@ -47,17 +49,17 @@ connect = new module.exports.Stream(spout1)
           #)
           .project( (data, cb) ->
             tags = []
-            for tag in data.entities?.hashtags
-              _norm = tag.text.toLowerCase()
-              if _norm is "lol" or _norm is "rice" then tags.push _norm
-            #tags = data.entities?.hashtags?.map (tag) -> tag.text.toLowerCase()
+            #for tag in data.entities?.hashtags
+            #  _norm = tag.text.toLowerCase()
+            #  if _norm is "lol" or _norm is "rice" then tags.push _norm
+            tags = data.entities?.hashtags?.map (tag) -> tag.text.toLowerCase()
             return cb null, {id: data?.id, tags: tags} )
           .inject( ( data, cb)-> return cb null, {injectDate: new Date(), text: "I love #{data.tags.join(' ')}"} )
           .aggregate( new module.exports.Aggregator
             window          : new module.exports.SlidingTimeWindow 5000
-            stats           : [ new module.exports.SumStat("id"), new module.exports.CountStat("id") ]
+            stats           : [ new SumStat("id"), new CountStat("id") ]
             cumulative      : false
-            groupBy         : "tags"
+            #groupBy         : "tags"
             emitFrequency   : 500
           )
           .sink (data) ->
