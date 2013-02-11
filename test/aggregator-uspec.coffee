@@ -185,7 +185,6 @@ describe "Aggregator", ->
         data.b.sum.should.eql 1
         data.b.count.should.eql 1
       else if _c is 3
-        console.log data
         should.exist data?.a
         should.exist data?.b
         should.exist data

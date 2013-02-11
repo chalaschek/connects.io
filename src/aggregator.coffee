@@ -107,7 +107,10 @@ class Aggregator extends EventEmitter
 
 
 
-  value : () -> return @aggregate
+  value : () ->
+    clone = {}
+    clone[key]=val for key,val of @aggregate
+    return clone
 
   process : (data) ->
     process.nextTick () =>
