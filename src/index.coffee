@@ -17,3 +17,4 @@ module.exports =
   SlidingTimeWindow : require("./sliding-window").SlidingTimeWindow
 
   SingletonWindow : require("./singleton-window")
+

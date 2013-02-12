@@ -11,8 +11,10 @@ class Window extends EventEmitter
   constructor : ( ) ->
     super()
 
-  events: () -> return new Error "Method must be implemented"
+  events: () -> throw new Error "Method must be implemented"
 
-  process : (data) -> return new Error "Method must be implemented"
+  size: () -> throw new Error "Method must be implemented"
+
+  process : (data) -> throw new Error "Method must be implemented"
 
 module.exports = Window

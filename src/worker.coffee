@@ -2,6 +2,6 @@
 
 class Worker extends EventEmitter
 
-  process : (data) -> return new Error "Workers must implement process method"
+  process : (data) -> throw new Error "Workers must implement process method"
 
 module.exports = Worker

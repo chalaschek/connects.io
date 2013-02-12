@@ -7,9 +7,13 @@ AggregateWorker  = require './aggregate-worker'
 
 class Connect extends EventEmitter
 
-  constructor : (@stream, @worker) ->
-    return new Error "Stream required" if not @stream
+  constructor : (@stream, @worker, @id, @topology) ->
+    throw new Error "Stream required" if not @stream
     super()
+
+    # register with topology if id and topology are provided
+    if @id and @topology then @topology.register @id, @
+
     @_sinks = []
     @_initWorker()
     @_connectStream()
@@ -19,22 +23,24 @@ class Connect extends EventEmitter
     return unless @worker
 
     @worker.on "data:new", (data) =>
-      @emit "data:new", data
-      sink data for sink in @_sinks
+      @_emit data
 
+  _emit : (data) ->
+    @emit "data:new", data
+    sink data for sink in @_sinks
 
   sink : (handler) ->
     @_sinks.push handler
 
-  filter : (fn) -> return new Connect @, new FilterWorker fn
+  filter : (fn, id) -> return new Connect @, new FilterWorker(fn), id, @topology
 
-  project : (fn) -> return new Connect @, new ProjectWorker fn
+  project : (fn, id) -> return new Connect @, new ProjectWorker(fn), id, @topology
 
-  inject : (fn) -> return new Connect @, new InjectWorker fn
+  inject : (fn, id) -> return new Connect @, new InjectWorker(fn), id, @topology
+
+  aggregate : ( aggregator, id ) -> return new Connect @, new AggregateWorker(aggregator), id, @topology
 
   #merge : () -> return new Connect @
-
-  aggregate : ( aggregator ) -> return new Connect @, new AggregateWorker aggregator
 
   #join : () -> return new Connect @stream
 

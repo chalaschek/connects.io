@@ -177,10 +177,9 @@ lint = (callback) ->
 
   walk "src", (error, files) ->
     if error then return log "Error reading src: #{err}", red
-    async.forEach files, (file, cb) ->
-      launch './node_modules/coffeelint/bin/coffeelint', ["-f", "coffeelint.json", file] , callback
-    , callback
-
+    i = 0
+    params = ["-f", "coffeelint.json"].concat files
+    launch './node_modules/coffeelint/bin/coffeelint', params, callback
 
 docco = (callback) ->
   log 'docing', blue

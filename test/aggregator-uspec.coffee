@@ -6,19 +6,19 @@ Aggregator = require "../lib/aggregator"
 
 SingletonWindow = require "../lib/singleton-window"
 
-{SumStat, CountStat} = require "../lib/stat"
+{SumStat, CountStat, MeanStat} = require "../lib/stat"
 
 describe "Aggregator", ->
   describe "Default Configuration", ->
     it "should use a singleton window by default", () ->
       agg = new Aggregator
-        stats           : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat("val"), new CountStat("val") ]
       val = agg.window instanceof SingletonWindow
       val.should.eql true
 
     it "should emit aggregates upon new data by default", (done) ->
       agg = new Aggregator
-        stats           : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat("val"), new CountStat("val") ]
       agg.on "data:new", (data) ->
         should.exist data
         data.sum.should.eql 10
@@ -30,7 +30,7 @@ describe "Aggregator", ->
 
     it "should aggregate cumulative stats by default", (done) ->
       agg = new Aggregator
-        stats           : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat("val"), new CountStat("val") ]
       _c = 0
       agg.on "data:new", (data) ->
         if _c is 0
@@ -44,17 +44,38 @@ describe "Aggregator", ->
           done()
         _c++
 
+      agg.process
+        val: 10
+      agg.process
+        val: 10
+
+
+
+    it "should aggregate cumulative mean stats", (done) ->
+      agg = new Aggregator
+        stats : [ new MeanStat("val") ]
+      _c = 0
+      agg.on "data:new", (data) ->
+        if _c is 0
+          should.exist data
+          data.mean.should.eql 10
+        else
+          should.exist data
+          data.mean.should.eql 5
+          done()
+        _c++
 
       agg.process
         val: 10
       agg.process
-        val: 10
+        val: 0
+
 
   it "should support a sliding time window", (done) ->
     agg = new Aggregator
-      window          : new SlidingTimeWindow 100, 10
-      stats           : [ new SumStat("val"), new CountStat("val") ]
-      cumulative      : false
+      window     : new SlidingTimeWindow 100, 10
+      stats      : [ new SumStat("val"), new CountStat("val") ]
+      cumulative : false
       #emitFrequency   : 100
   
     _c = 0

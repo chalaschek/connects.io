@@ -16,6 +16,8 @@ class SingletoneWindow extends Window
     # return events in the window
     if @_event then return [@_event] else return []
 
+  size : () -> if @_event then return 1 else return 0
+
   process : (data) ->
     # trigger pop event
     if @_event then @emit "data:pop", [@_event]

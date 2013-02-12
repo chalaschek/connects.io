@@ -1,1 +1,1 @@
-module.exports = require('./lib/connects.io');
+module.exports = require('./lib/');

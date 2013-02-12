@@ -50,6 +50,8 @@ class Aggregator extends EventEmitter
 
 
   _accumulate : (events) ->
+    _size = @window.size()
+
     # handle each stat
     for stat in @stats
       for data in events
@@ -69,17 +71,19 @@ class Aggregator extends EventEmitter
             if not @aggregate[group] then @aggregate[group] = {}
             if not @aggregate[group][stat.outputName] then @aggregate[group][stat.outputName] = 0
             # perform aggregate calc
-            @aggregate[group][stat.outputName] = stat.accumulate @aggregate[group][stat.outputName], data[stat.aggregateField]
+            @aggregate[group][stat.outputName] = stat.accumulate @aggregate[group][stat.outputName], data[stat.aggregateField], _size
         else
           # lazy init
           if not @aggregate[stat.outputName] then @aggregate[stat.outputName] = 0
           # perform aggregate calc
-          @aggregate[stat.outputName] = stat.accumulate @aggregate[stat.outputName], data[stat.aggregateField]
+          @aggregate[stat.outputName] = stat.accumulate @aggregate[stat.outputName], data[stat.aggregateField], _size
 
     @emit "aggregate:updated:accumulate"
 
   _offset : (events) ->
     return if @cumulative
+    _size = @window.size()
+
     # handle each stat
     for stat in @stats
       for data in events
@@ -97,11 +101,11 @@ class Aggregator extends EventEmitter
           for group in _groups
             continue if not @aggregate[group]?[stat.outputName]
             # perform aggregate calc
-            @aggregate[group][stat.outputName] = stat.offset @aggregate[group][stat.outputName], data[stat.aggregateField]
+            @aggregate[group][stat.outputName] = stat.offset @aggregate[group][stat.outputName], data[stat.aggregateField], _size
         else
           continue if not @aggregate[stat.outputName]
           # perform aggregate calc
-          @aggregate[stat.outputName] = stat.offset @aggregate[stat.outputName], data[stat.aggregateField]
+          @aggregate[stat.outputName] = stat.offset @aggregate[stat.outputName], data[stat.aggregateField], _size
 
     @emit "aggregate:updated:offset"
 

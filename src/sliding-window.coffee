@@ -16,9 +16,11 @@ class SlidingWindow extends Window
   events: () ->
     return @_window
 
-  purge : () -> return new Error "Method must be implemented"
+  size : () -> return @_window.length
 
-  process : (data) -> return new Error "Method must be implemented"
+  purge : () -> throw new Error "Method must be implemented"
+
+  process : (data) -> throw new Error "Method must be implemented"
 
 
 
@@ -27,7 +29,7 @@ class SlidingTimeWindow extends SlidingWindow
   _defaultPurgeInterval : 100
 
   constructor : (@n, @windowPurgeInterval=@_defaultPurgeInterval) ->
-    if @n < 1 then return new Error "Time interval must be greater than 1"
+    if @n < 1 then throw new Error "Time interval must be greater than 1"
     super @n
 
     @_initTicker()

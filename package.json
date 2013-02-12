@@ -5,7 +5,6 @@
   "author": "Christian Halaschek-Wiener <chalaschek@gmail.com>",
   "keywords": ["realtime", "event", "stream","cep"],
   "dependencies": {
-    "async": ">=0.2.2"
   },
   "devDependencies": {
     "twit" : "1.0",
@@ -14,7 +13,8 @@
     "wrench": ">=1.4.4",
     "should": ">=1.2",
     "docco": ">=0.4.0",
-    "coffeelint" : ">=0.4"
+    "coffeelint" : ">=0.4",
+    "async": ">=0.2.2"
   },
   "repository": {
     "type": "git",
