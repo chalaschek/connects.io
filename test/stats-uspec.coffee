@@ -6,40 +6,50 @@ describe "Stats", ->
   _name = "customOutputAttribute"
 
   it "should support custom output field names", ->
-    stat = new Stat "id", _name
+    stat = new Stat {aggregateField: "id", outputName: _name}
     stat.outputName.should.eql _name
 
   describe "Sum Stats", ->
-    stat = new SumStat "id", _name
+    stat = new SumStat {aggregateField: "id", outputName: _name}
 
-    it "should add when accumulated", ->
-      val = stat.accumulate 0, 10
-      val.should.equal 10
+    it "should add when accumulated", (done) ->
+      stat.accumulate 10, (error, val) ->
+        val.should.equal 10
+        done()
 
-    it "should substract when offset", ->
-      val = stat.offset 10, 10
-      val.should.equal 0
+    it "should substract when offset", (done) ->
+      stat.offset 10, (error, val) ->
+        val.should.equal 0
+        done()
 
 
   describe "Count Stats", ->
-    stat = new CountStat "id", _name
+    stat = new CountStat {aggregateField: "id", outputName: _name}
 
-    it "should increment counter when accumulated", ->
-      val = stat.accumulate 0, 10
-      val.should.equal 1
+    it "should increment counter when accumulated", (done) ->
+      stat.accumulate 10, (error, val) ->
+        val.should.equal 1
+        done()
 
-    it "should descrement when offset", ->
-      val = stat.offset 10, 10
-      val.should.equal 9
+    it "should descrement when offset", (done) ->
+      stat.offset 10, (error, val) ->
+        val.should.equal 0
+        done()
 
   
   describe "Mean Stats", ->
-    stat = new MeanStat "id", _name
+    stat = new MeanStat {aggregateField: "id", outputName: _name}
 
-    it "should update the mean when a number is added", ->
-      val = stat.accumulate 0, 10, 2
-      val.should.equal 5
+    it "should update the mean when a number is added", (done) ->
+      stat.accumulate 10, (error, val) ->
+        val.should.equal 10
+        stat.accumulate 0, (error, val) ->
+          val.should.equal 5
+          done()
 
-    it "should update the mean when a number is removed", ->
-      val = stat.offset 5, 0, 1
-      val.should.equal 10
+
+
+    it "should update the mean when a number is removed", (done) ->
+      stat.offset 0, (error, val) ->
+        val.should.equal 10
+        done()

@@ -99,7 +99,7 @@ describe "Topology", ->
     topology = new Topology()
     topology.stream(spout, "stream1")
             .aggregate( new Aggregator(
-              stats : [ new SumStat("val"), new CountStat("val") ]
+              stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
             ), "agger")
 
     stream = topology.get "agger"

@@ -4,12 +4,9 @@ uuid          = require './uuid'
 
 class Stat
 
-  id : "stat_interface"
-
   defaultOutputName : "stat_name"
 
-  ###
-  constructor : (config) ->#@aggregateField, @outputName=@defaultOutputName) ->
+  constructor : (config) ->
     # create interal id
     @_id = uuid.uuid()
     # set configs
@@ -23,55 +20,92 @@ class Stat
 
     throw new Error "Aggregate field must be specified" if not @aggregateField
 
-  ###
+  accumulate : (newValue, callback) -> throw new Error "Method must be implemented"
 
-  constructor : (@aggregateField, @outputName=@defaultOutputName) ->
-    throw new Error "Aggregate field must be specified" if not @aggregateField
-
-
-  accumulate : (currentAggregateValue, newValue) -> throw new Error "Method must be implemented"
-
-  offset : (currentAggregateValue, oldValue) -> throw new Error "Method must be implemented"
+  offset : (oldValue, callback) -> throw new Error "Method must be implemented"
 
 
 
 class SumStat extends Stat
 
-  id : "sum_stat"
-
   defaultOutputName : "sum"
 
-  accumulate : (currentAggregateValue, newValue) ->
-    return currentAggregateValue + newValue
+  constructor : (config) ->
+    super config
+    # init key
+    @_key = "#{@_id}:sum"
 
-  offset : (currentAggregateValue, oldValue) ->
-    return currentAggregateValue - oldValue
+  accumulate : (newValue, callback) ->
+    @store.get @_key, (error, curr=0) =>
+      return callback error if error
+      val = curr + newValue
+      @store.put @_key, val, (error) =>
+        return callback error, val
+
+  offset : (oldValue, callback) ->
+    @store.get @_key, (error, curr=0) =>
+      return callback error if error
+      # if cumulative then do nothing
+      # TODO: consider throwing an error here
+      if @cumulative then return callback null, curr
+      val = curr - oldValue
+      @store.put @_key, val, (error) ->
+        return callback error, val
 
 
 class CountStat extends Stat
 
-  id : "count_stat"
-
   defaultOutputName : "count"
 
-  accumulate : (currentAggregateValue, newValue) ->
-    return currentAggregateValue + 1
+  constructor : (config) ->
+    super config
+    # init key
+    @_key = "#{@_id}:count"
 
-  offset : (currentAggregateValue, oldValue) ->
-    return currentAggregateValue - 1
+  accumulate : (newValue, callback) ->
+    @store.get @_key, (error, curr=0) =>
+      return callback error if error
+      val = curr + 1
+      @store.put @_key, val, (error) =>
+        return callback error, val
+
+  offset : (oldValue, callback) ->
+    @store.get @_key, (error, curr=0) =>
+      return callback error if error
+      # if cumulative then do nothing
+      # TODO: consider throwing an error here
+      if @cumulative then return callback null, curr
+      val = curr - 1
+      @store.put @_key, val, (error) ->
+        return callback error, val
 
 
 class MeanStat extends Stat
 
-  id : "mean_stat"
-
   defaultOutputName : "mean"
 
-  accumulate : (currentAggregateValue, newValue, n) ->
-    return ((currentAggregateValue * (n-1)) + newValue) / n
+  constructor : (config) ->
+    super config
+    # init keys
+    @_key = "#{@_id}:mean"
 
-  offset : (currentAggregateValue, oldValue, n) ->
-    return ((currentAggregateValue * (n+1)) - oldValue) / n
+  accumulate : (newValue, callback) ->
+    @store.get @_key, (error, data={n: 0, mean: 0}) =>
+      return callback error if error
+      data.mean = ((data.mean * (data.n)) + newValue) / (data.n+1)
+      data.n++
+      @store.put @_key, data, (error) =>
+        return callback error, data.mean
+
+  offset : (oldValue, callback) ->
+    @store.get @_key, (error, data={n: 0, mean: 0}) =>
+      return callback error if error
+      if @cumulative then return callback null, data.mean
+      # TODO: consider how to handle negative
+      data.mean = ((data.mean * (data.n)) - oldValue) / (data.n-1)
+      data.n--
+      @store.put @_key, data, (error) =>
+        return callback error, data.mean
 
 
 module.exports =

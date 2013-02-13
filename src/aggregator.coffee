@@ -1,23 +1,27 @@
-{EventEmitter}  = require 'events'
+{EventEmitter}    = require 'events'
 
-SingletoneWindow = require "./singleton-window"
+SingletoneWindow  = require "./singleton-window"
+
+{MemoryStore}     = require './store'
+
+uuid              = require './uuid'
 
 class Aggregator extends EventEmitter
-
-  id : "aggregator"
 
   constructor : ( config={} ) ->
     super()
 
-    {@stats, @window, @groupBy, @cumulative, @emitFrequency} = config
+    @_id = uuid()
+
+    @_key = "#{@_id}:aggregate"
+
+    {@stats, @window, @groupBy, @cumulative, @emitFrequency, @store} = config
 
     if not @stats then @stats = []
 
     if not @window then @window = new SingletoneWindow()
 
-    if @cumulative is undefined or @cumulative is null then @cumulative = true
-
-    @aggregate = {}
+    if not @store then @store = new MemoryStore()
 
     @_initEmitter()
 
@@ -33,25 +37,26 @@ class Aggregator extends EventEmitter
         @_offset events
 
 
+  _emitValue : () ->
+    @_value (error, value) =>
+      @emit "data:new", value
+
+
   _initEmitter : () ->
     if @emitFrequency
       @_interval = setInterval () =>
-        @emit "data:new", @value()
+        @_emitValue()
       , @emitFrequency
     else
       @on "aggregate:updated:accumulate", (data) =>
-        @emit "data:new", @value()
+        @_emitValue()
 
       @on "aggregate:updated:offset", (data) =>
         # only emit event if this is not a singleton window
         # in that case it will be triggered by the accumulate method associated with the push
-        if not (@window instanceof SingletoneWindow) then @emit "data:new", @value()
-
-
+        if not (@window instanceof SingletoneWindow) then @_emitValue()
 
   _accumulate : (events) ->
-    _size = @window.size()
-
     # handle each stat
     for stat in @stats
       for data in events
@@ -71,12 +76,12 @@ class Aggregator extends EventEmitter
             if not @aggregate[group] then @aggregate[group] = {}
             if not @aggregate[group][stat.outputName] then @aggregate[group][stat.outputName] = 0
             # perform aggregate calc
-            @aggregate[group][stat.outputName] = stat.accumulate @aggregate[group][stat.outputName], data[stat.aggregateField], _size
+            @aggregate[group][stat.outputName] = stat.accumulate @aggregate[group][stat.outputName], data[stat.aggregateField]
         else
           # lazy init
           if not @aggregate[stat.outputName] then @aggregate[stat.outputName] = 0
           # perform aggregate calc
-          @aggregate[stat.outputName] = stat.accumulate @aggregate[stat.outputName], data[stat.aggregateField], _size
+          @aggregate[stat.outputName] = stat.accumulate @aggregate[stat.outputName], data[stat.aggregateField]
 
     @emit "aggregate:updated:accumulate"
 
@@ -111,10 +116,12 @@ class Aggregator extends EventEmitter
 
 
 
-  value : () ->
-    clone = {}
-    clone[key]=val for key,val of @aggregate
-    return clone
+  value : (callback) ->
+    @store.get @_key, (error, agg) =>
+      return callback error if error
+      clone = {}
+      clone[key]=val for key,val of agg
+      return callback null, clone
 
   process : (data) ->
     process.nextTick () =>

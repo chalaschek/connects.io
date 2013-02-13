@@ -12,13 +12,13 @@ describe "Aggregator", ->
   describe "Default Configuration", ->
     it "should use a singleton window by default", () ->
       agg = new Aggregator
-        stats : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}}) ]
       val = agg.window instanceof SingletonWindow
       val.should.eql true
 
     it "should emit aggregates upon new data by default", (done) ->
       agg = new Aggregator
-        stats : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       agg.on "data:new", (data) ->
         should.exist data
         data.sum.should.eql 10
@@ -30,7 +30,7 @@ describe "Aggregator", ->
 
     it "should aggregate cumulative stats by default", (done) ->
       agg = new Aggregator
-        stats : [ new SumStat("val"), new CountStat("val") ]
+        stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       _c = 0
       agg.on "data:new", (data) ->
         if _c is 0
@@ -53,7 +53,7 @@ describe "Aggregator", ->
 
     it "should aggregate cumulative mean stats", (done) ->
       agg = new Aggregator
-        stats : [ new MeanStat("val") ]
+        stats : [ new MeanStat({aggregateField: "val"}) ]
       _c = 0
       agg.on "data:new", (data) ->
         if _c is 0
@@ -74,7 +74,7 @@ describe "Aggregator", ->
   it "should support a sliding time window", (done) ->
     agg = new Aggregator
       window     : new SlidingTimeWindow 100, 10
-      stats      : [ new SumStat("val"), new CountStat("val") ]
+      stats      : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative : false
       #emitFrequency   : 100
   
@@ -109,7 +109,7 @@ describe "Aggregator", ->
 
   it "should emit aggregates on a user specified interval", (done) ->
     agg = new Aggregator
-      stats           : [ new SumStat("val"), new CountStat("val") ]
+      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative      : false
       emitFrequency   : 100
   
@@ -131,7 +131,7 @@ describe "Aggregator", ->
 
   it "should support non-cumulative aggregates", (done) ->
     agg = new Aggregator
-      stats           : [ new SumStat("val"), new CountStat("val") ]
+      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative      : false
   
     _c = 0
@@ -155,7 +155,7 @@ describe "Aggregator", ->
 
   it "should support multiple stats", (done) ->
     agg = new Aggregator
-      stats           : [ new SumStat("val"), new CountStat("val") ]
+      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative      : false
   
     _c = 0
@@ -180,7 +180,7 @@ describe "Aggregator", ->
   it "should support grouping aggregate stats by a groupBy field", (done) ->
     agg = new Aggregator
       window          : new SlidingTimeWindow 100, 10
-      stats           : [ new SumStat("val"), new CountStat("val") ]
+      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative      : false
       groupBy         : "tag"
   

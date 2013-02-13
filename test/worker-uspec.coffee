@@ -104,7 +104,7 @@ describe "Worker", ->
 
   describe "Aggregate Worker", ->
     aggregator = new Aggregator
-      stats           : [ new SumStat("val"), new CountStat("val") ]
+      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       cumulative      : true
       emitFrequency   : 100
 

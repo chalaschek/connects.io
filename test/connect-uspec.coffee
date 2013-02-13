@@ -12,7 +12,7 @@ describe "Connect", ->
   it "should support output sinks", (done) ->
     spout = new Spout()
     connect = new Stream(spout)
-          .aggregate( new Aggregator {stats : [ new SumStat("val"), new CountStat("val") ] } )
+          .aggregate( new Aggregator {stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ] } )
           .filter( (data, cb) ->
             if data.count > 1 then return cb null, data else return cb() )
           .project( (data, cb) ->
@@ -93,7 +93,7 @@ describe "Connect", ->
     spout = new Spout()
     stream = new Stream spout
     connect = stream.aggregate new Aggregator
-      stats : [ new SumStat("val"), new CountStat("val") ]
+      stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
 
     _c = 0
     connect.on "data:new", (data) ->
@@ -117,7 +117,7 @@ describe "Connect", ->
   it "should support chaining connects", (done) ->
     spout = new Spout()
     connect = new Stream(spout)
-          .aggregate( new Aggregator {stats : [ new SumStat("val"), new CountStat("val") ] } )
+          .aggregate( new Aggregator {stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ] } )
           .filter( (data, cb) ->
             if data.count > 1 then return cb null, data else return cb() )
           .project( (data, cb) ->
