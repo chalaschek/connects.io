@@ -17,7 +17,7 @@ describe "Connect", ->
             if data.count > 1 then return cb null, data else return cb() )
           .project( (data, cb) ->
             return cb null, {val: data.count})
-          .inject( ( data, cb)-> return cb null, {name: "test"} )
+          .inject( ( data, cb)->return cb null, {name: "test"} )
           .sink (data) ->
             should.exist data
             data.val.should.eql 2
@@ -32,7 +32,7 @@ describe "Connect", ->
     spout.emit "data:new",
       val: 10
 
-
+  
   it "should support filter", (done) ->
     spout = new Spout()
     stream = new Stream spout
@@ -136,3 +136,5 @@ describe "Connect", ->
 
     spout.emit "data:new",
       val: 10
+
+

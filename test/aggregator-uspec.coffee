@@ -9,14 +9,31 @@ SingletonWindow = require "../lib/singleton-window"
 {SumStat, CountStat, MeanStat} = require "../lib/stat"
 
 describe "Aggregator", ->
+
   describe "Default Configuration", ->
-    it "should use a singleton window by default", () ->
-      agg = new Aggregator
-        stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}}) ]
+
+    it "should use a singleton window", () ->
+      agg = new Aggregator()
       val = agg.window instanceof SingletonWindow
       val.should.eql true
 
-    it "should emit aggregates upon new data by default", (done) ->
+    it "should be cumuluative", () ->
+      agg = new Aggregator()
+      agg.cumulative.should.eql true
+
+
+    it "should emit aggregates upon new data", (done) ->
+      agg = new Aggregator
+        stats : [ new SumStat({aggregateField: "val"}) ]
+      agg.on "data:new", (data) ->
+        should.exist data
+        data.sum.should.eql 10
+        done()
+
+      agg.process
+        val: 10
+
+    it "should support multiple stats", (done) ->
       agg = new Aggregator
         stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
       agg.on "data:new", (data) ->
@@ -28,208 +45,110 @@ describe "Aggregator", ->
       agg.process
         val: 10
 
-    it "should aggregate cumulative stats by default", (done) ->
+
+  describe "Sliding Time Window", ->
+
+    it "should support cumulative window", (done) ->
       agg = new Aggregator
-        stats : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
+        window     : new SlidingTimeWindow 100, 10
+        stats      : [ new SumStat({aggregateField: "val"}) ]
+
       _c = 0
       agg.on "data:new", (data) ->
         if _c is 0
           should.exist data
           data.sum.should.eql 10
-          data.count.should.eql 1
-        else
+        else if _c is 1
           should.exist data
-          data.sum.should.eql 20
+          data.sum.should.eql 11
+          done()
+        _c++
+
+      agg.process
+        val: 10
+
+      setTimeout () ->
+        agg.process
+          val: 1
+      , 20
+
+
+
+    it "should support non-cumulative window", (done) ->
+      agg = new Aggregator
+        window     : new SlidingTimeWindow 10, 10
+        stats      : [ new SumStat({aggregateField: "val"}) ]
+        cumulative: false
+
+      _c = 0
+      agg.on "data:new", (data) ->
+        if _c is 0
+          should.exist data
+          data.sum.should.eql 10
+        else if _c is 1
+          should.exist data
+          data.sum.should.eql 0
+        else if _c is 2
+          should.exist data
+          data.sum.should.eql 1
+          done()
+        _c++
+
+      agg.process
+        val: 10
+
+      setTimeout () ->
+        agg.process
+          val: 1
+      , 20
+
+
+  describe "Singleton Window", ->
+
+    it "should support a cumulative window", (done) ->
+      agg = new Aggregator
+        stats      : [ new CountStat({aggregateField: "val"}) ]
+
+      _c = 0
+      agg.on "data:new", (data) ->
+        if _c is 0
+          should.exist data
+          data.count.should.eql 1
+        else if _c is 1
+          should.exist data
           data.count.should.eql 2
           done()
         _c++
 
       agg.process
         val: 10
-      agg.process
-        val: 10
+
+      setTimeout () ->
+        agg.process
+          val: 1
+      , 20
 
 
-
-    it "should aggregate cumulative mean stats", (done) ->
+    it "should support a non-cumulative window", (done) ->
       agg = new Aggregator
-        stats : [ new MeanStat({aggregateField: "val"}) ]
+        stats      : [ new CountStat({aggregateField: "val"}) ]
+        cumulative: false
+
       _c = 0
       agg.on "data:new", (data) ->
         if _c is 0
           should.exist data
-          data.mean.should.eql 10
-        else
+          data.count.should.eql 1
+        else if _c is 1
           should.exist data
-          data.mean.should.eql 5
+          data.count.should.eql 1
           done()
         _c++
 
       agg.process
         val: 10
-      agg.process
-        val: 0
 
-
-  it "should support a sliding time window", (done) ->
-    agg = new Aggregator
-      window     : new SlidingTimeWindow 100, 10
-      stats      : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
-      cumulative : false
-      #emitFrequency   : 100
-  
-    _c = 0
-    agg.on "data:new", (data) ->
-      if _c is 0
-        should.exist data
-        data.sum.should.eql 10
-        data.count.should.eql 1
-      else if _c is 1
-        should.exist data
-        data.sum.should.eql 11
-        data.count.should.eql 2
-      else if _c is 2
-        should.exist data
-        data.sum.should.eql 1
-        data.count.should.eql 1
-      else if _c is 3
-        should.exist data
-        data.sum.should.eql 0
-        data.count.should.eql 0
-        done()
-      _c++
-
-    agg.process
-      val: 10
-
-    setTimeout () ->
-      agg.process
-        val: 1
-    , 20
-
-  it "should emit aggregates on a user specified interval", (done) ->
-    agg = new Aggregator
-      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
-      cumulative      : false
-      emitFrequency   : 100
-  
-    _c = 0
-    agg.on "data:new", (data) ->
-      if _c is 0
-        should.exist data
-        data.sum.should.eql 10
-        data.count.should.eql 1
-      else if _c is 1
-        should.exist data
-        data.sum.should.eql 10
-        data.count.should.eql 1
-        done()
-      _c++
-
-    agg.process
-      val: 10
-
-  it "should support non-cumulative aggregates", (done) ->
-    agg = new Aggregator
-      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
-      cumulative      : false
-  
-    _c = 0
-    agg.on "data:new", (data) ->
-      if _c is 0
-        should.exist data
-        data.sum.should.eql 10
-        data.count.should.eql 1
-      else if _c is 1
-        should.exist data
-        data.sum.should.eql 1
-        data.count.should.eql 1
-        done()
-      _c++
-
-    agg.process
-      val: 10
-
-    agg.process
-      val: 1
-
-  it "should support multiple stats", (done) ->
-    agg = new Aggregator
-      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
-      cumulative      : false
-  
-    _c = 0
-    agg.on "data:new", (data) ->
-      if _c is 0
-        should.exist data
-        data.sum.should.eql 10
-        data.count.should.eql 1
-      else if _c is 1
-        should.exist data
-        data.sum.should.eql 1
-        data.count.should.eql 1
-        done()
-      _c++
-
-    agg.process
-      val: 10
-
-    agg.process
-      val: 1
-
-  it "should support grouping aggregate stats by a groupBy field", (done) ->
-    agg = new Aggregator
-      window          : new SlidingTimeWindow 100, 10
-      stats           : [ new SumStat({aggregateField: "val"}), new CountStat({aggregateField: "val"}) ]
-      cumulative      : false
-      groupBy         : "tag"
-  
-    _c = 0
-    agg.on "data:new", (data) ->
-      if _c is 0
-        should.exist data?.a
-        data.a.sum.should.eql 10
-        data.a.count.should.eql 1
-      else if _c is 1
-        should.exist data?.a
-        should.exist data?.b
-        should.exist data
-        data.a.sum.should.eql 10
-        data.a.count.should.eql 1
-        data.b.sum.should.eql 1
-        data.b.count.should.eql 1
-      else if _c is 2
-        should.exist data?.a
-        should.exist data?.b
-        should.exist data
-        data.a.sum.should.eql 11
-        data.a.count.should.eql 2
-        data.b.sum.should.eql 1
-        data.b.count.should.eql 1
-      else if _c is 3
-        should.exist data?.a
-        should.exist data?.b
-        should.exist data
-        data.a.sum.should.eql 1
-        data.a.count.should.eql 1
-        data.b.sum.should.eql 1
-        data.b.count.should.eql 1
-        done()
-      _c++
-
-    agg.process
-      val: 10
-      tag: "a"
-
-    setTimeout () ->
-      agg.process
-        val: 1
-        tag: "b"
-    , 20
-
-    setTimeout () ->
-      agg.process
-        val: 1
-        tag: "a"
-    , 50
-
+      setTimeout () ->
+        agg.process
+          val: 1
+      , 20

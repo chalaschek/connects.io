@@ -1,5 +1,7 @@
 should  = require 'should'
 
+{MemoryStore} = require "../lib/store"
+
 {Stat, SumStat, CountStat, MeanStat} = require "../lib/stat"
 
 describe "Stats", ->
@@ -9,47 +11,87 @@ describe "Stats", ->
     stat = new Stat {aggregateField: "id", outputName: _name}
     stat.outputName.should.eql _name
 
+  it "should use a memory store by default", ->
+    stat = new Stat {aggregateField: "id", outputName: _name}
+    val = stat.store instanceof MemoryStore
+
+
   describe "Sum Stats", ->
-    stat = new SumStat {aggregateField: "id", outputName: _name}
+    it "should add stats when accumulated", (done) ->
+      stat = new SumStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 10
+        stat.accumulate {id: 10}, (error, val) ->
+          val[_name].should.equal 20
+          done()
 
-    it "should add when accumulated", (done) ->
-      stat.accumulate 10, (error, val) ->
-        val.should.equal 10
-        done()
+    it "should substract stats when offset", (done) ->
+      stat = new SumStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 10
+        stat.offset {id: 10}, (error, val) ->
+          val[_name].should.equal 0
+          done()
 
-    it "should substract when offset", (done) ->
-      stat.offset 10, (error, val) ->
-        val.should.equal 0
-        done()
+    it "should support grouping aggregate stats by a groupBy field", (done) ->
+      stat = new SumStat {aggregateField: "id", outputName: _name, groupBy: "group"}
+      stat.accumulate {id: 10, group: "a"}, (error, val) ->
+        val.a[_name].should.equal 10
+        stat.accumulate {id: 10, group: "a"}, (error, val) ->
+          val.a[_name].should.equal 20
+          done()
 
 
   describe "Count Stats", ->
-    stat = new CountStat {aggregateField: "id", outputName: _name}
-
     it "should increment counter when accumulated", (done) ->
-      stat.accumulate 10, (error, val) ->
-        val.should.equal 1
-        done()
+      stat = new CountStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 1
+        stat.accumulate {id: 10}, (error, val) ->
+          val[_name].should.equal 2
+          done()
+
 
     it "should descrement when offset", (done) ->
-      stat.offset 10, (error, val) ->
-        val.should.equal 0
-        done()
+      stat = new CountStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 1
+        stat.offset {id: 10}, (error, val) ->
+          val[_name].should.equal 0
+          done()
+
+    it "should support grouping aggregate stats by a groupBy field", (done) ->
+      stat = new CountStat {aggregateField: "id", outputName: _name, groupBy: "group"}
+      stat.accumulate {id: 10, group: "a"}, (error, val) ->
+        val.a[_name].should.equal 1
+        stat.accumulate {id: 10, group: "a"}, (error, val) ->
+          val.a[_name].should.equal 2
+          done()
 
   
   describe "Mean Stats", ->
-    stat = new MeanStat {aggregateField: "id", outputName: _name}
-
     it "should update the mean when a number is added", (done) ->
-      stat.accumulate 10, (error, val) ->
-        val.should.equal 10
-        stat.accumulate 0, (error, val) ->
-          val.should.equal 5
+      stat = new MeanStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 10
+        stat.accumulate {id: 0}, (error, val) ->
+          val[_name].should.equal 5
           done()
 
 
 
     it "should update the mean when a number is removed", (done) ->
-      stat.offset 0, (error, val) ->
-        val.should.equal 10
-        done()
+      stat = new MeanStat {aggregateField: "id", outputName: _name}
+      stat.accumulate {id: 10}, (error, val) ->
+        val[_name].should.equal 10
+        stat.offset {id: 10}, (error, val) ->
+          val[_name].should.equal 0
+          done()
+
+    it "should support grouping aggregate stats by a groupBy field", (done) ->
+      stat = new MeanStat {aggregateField: "id", outputName: _name, groupBy: "group"}
+      stat.accumulate {id: 10, group: "a"}, (error, val) ->
+        val.a[_name].should.equal 10
+        stat.accumulate {id: 20, group: "a"}, (error, val) ->
+          val.a[_name].should.equal 15
+          done()

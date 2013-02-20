@@ -1,28 +1,91 @@
-uuid          = require './uuid'
-{MemoryStore} = require './store'
+{EventEmitter}  = require 'events'
+uuid            = require './uuid'
+{MemoryStore}   = require './store'
+_               = require 'underscore'
+async           = require 'async'
 
-
-class Stat
+class Stat extends EventEmitter
 
   defaultOutputName : "stat_name"
 
   constructor : (config) ->
-    # create interal id
-    @_id = uuid.uuid()
     # set configs
-    {@aggregateField, @outputName, @cumulative, @store} = config
+    {@aggregateField, @outputName, @store, @groupBy} = config
     # default output name if needed
     @outputName = @defaultOutputName unless @outputName
-    # cumulative by default
-    @cumulative = true unless @cumulative isnt null
     # default to memory store
     @store = new MemoryStore() unless @store
 
     throw new Error "Aggregate field must be specified" if not @aggregateField
 
-  accumulate : (newValue, callback) -> throw new Error "Method must be implemented"
+  _groups : (element) ->
+    # if not field to group by then ignore
+    if not @groupBy or not element?[@groupBy] then return
+    # get groups
+    groups = element[@groupBy]
+    # convert to array if needed
+    if not (groups instanceof Array)
+      groups = [groups]
+    return groups
 
-  offset : (oldValue, callback) -> throw new Error "Method must be implemented"
+  _values : (elements) ->
+    values = if @groupBy then {} else []
+    for data in elements
+      if data[@aggregateField] is null then continue
+      val = data[@aggregateField]
+      groups = @_groups data
+      if groups
+        for group in groups
+          vals = values[group]
+          if not vals
+            values[group] = vals = []
+          vals.push val
+      else
+        values.push val
+    return values
+
+  _update : (key, values, isAccumulate, callback) -> throw new Error "Method must be implemented"
+
+  accumulate : (elements, callback) ->
+    if not(elements instanceof Array) then elements = [elements]
+    values = @_values elements
+    if values instanceof Array
+      @_update @_key, values, true, (error, value) =>
+        result = {}
+        result[@outputName] = value
+        callback error, result
+    else
+      groups = _.keys values
+      result = {}
+      async.forEach groups, (group, cb) =>
+        @_update "#{group}:#{@_key}", values[group], true, (error, value) =>
+          _r = {}
+          _r[@outputName] = value
+          result[group] = _r
+          cb()
+      , (error) =>
+        callback error, result
+
+  offset : (elements, callback) ->
+    if not(elements instanceof Array) then elements = [elements]
+    values = @_values elements
+
+    if values instanceof Array
+      @_update @_key, values, false, (error, value) =>
+        result = {}
+        result[@outputName] = value
+        callback error, result
+    else
+      groups = _.keys values
+      result = {}
+      async.forEach groups, (group, cb) =>
+        @_update "#{group}:#{@_key}", values[group], false, (error, value) =>
+          _r = {}
+          _r[@outputName] = value
+          result[group] = _r
+          cb()
+      , (error) =>
+        callback error, result
 
 
 
@@ -30,82 +93,57 @@ class SumStat extends Stat
 
   defaultOutputName : "sum"
 
-  constructor : (config) ->
-    super config
-    # init key
-    @_key = "#{@_id}:sum"
+  _key : "sum"
 
-  accumulate : (newValue, callback) ->
-    @store.get @_key, (error, curr=0) =>
-      return callback error if error
-      val = curr + newValue
-      @store.put @_key, val, (error) =>
-        return callback error, val
+  _update : (key, values, isAccumulate, callback) ->
+    @store.get key, (error, curr=0) =>
+      if error then return callback error
+      newValue = _.reduce values, ((memo, num) -> return memo+num), 0
+      if isAccumulate then val = curr+newValue else val = curr-newValue
+      @store.put key, val, (error) =>
+        if error then return callback error
+        callback null, val
 
-  offset : (oldValue, callback) ->
-    @store.get @_key, (error, curr=0) =>
-      return callback error if error
-      # if cumulative then do nothing
-      # TODO: consider throwing an error here
-      if @cumulative then return callback null, curr
-      val = curr - oldValue
-      @store.put @_key, val, (error) ->
-        return callback error, val
 
 
 class CountStat extends Stat
 
   defaultOutputName : "count"
 
-  constructor : (config) ->
-    super config
-    # init key
-    @_key = "#{@_id}:count"
+  _key : "count"
 
-  accumulate : (newValue, callback) ->
-    @store.get @_key, (error, curr=0) =>
-      return callback error if error
-      val = curr + 1
-      @store.put @_key, val, (error) =>
-        return callback error, val
+  _update : (key, values, isAccumulate, callback) ->
+    @store.get key, (error, curr=0) =>
+      if error then return callback error
+      newValue = values.length
+      if isAccumulate then val = curr+newValue else val = curr-newValue
+      @store.put key, val, (error) =>
+        if error then return callback error
+        callback null, val
 
-  offset : (oldValue, callback) ->
-    @store.get @_key, (error, curr=0) =>
-      return callback error if error
-      # if cumulative then do nothing
-      # TODO: consider throwing an error here
-      if @cumulative then return callback null, curr
-      val = curr - 1
-      @store.put @_key, val, (error) ->
-        return callback error, val
 
 
 class MeanStat extends Stat
 
   defaultOutputName : "mean"
 
-  constructor : (config) ->
-    super config
-    # init keys
-    @_key = "#{@_id}:mean"
+  _key : "mean"
 
-  accumulate : (newValue, callback) ->
-    @store.get @_key, (error, data={n: 0, mean: 0}) =>
-      return callback error if error
-      data.mean = ((data.mean * (data.n)) + newValue) / (data.n+1)
-      data.n++
-      @store.put @_key, data, (error) =>
-        return callback error, data.mean
+  _update : (key, values, isAccumulate, callback) ->
+    @store.get key, (error, data={n: 0, mean: 0}) =>
+      if error then return callback error
+      newValue = _.reduce values, ((memo, num) -> return memo+num), 0
+      n = values.length
+      if isAccumulate
+        data.mean = ((data.mean * (data.n)) + newValue) / (data.n+n)
+        data.n+=n
+      else
+        if data.n-n is 0 then data.mean = 0 else data.mean = ((data.mean * (data.n)) - newValue) / (data.n-n)
+        data.n-=n
+      @store.put key, data, (error) =>
+        if error then return callback error
+        callback null, data.mean
 
-  offset : (oldValue, callback) ->
-    @store.get @_key, (error, data={n: 0, mean: 0}) =>
-      return callback error if error
-      if @cumulative then return callback null, data.mean
-      # TODO: consider how to handle negative
-      data.mean = ((data.mean * (data.n)) - oldValue) / (data.n-1)
-      data.n--
-      @store.put @_key, data, (error) =>
-        return callback error, data.mean
 
 
 module.exports =
