@@ -18,3 +18,4 @@ module.exports =
 
   SingletonWindow : require("./singleton-window")
 
+  MemoryStore : require("./store").MemoryStore
