@@ -6,7 +6,14 @@ SingletonWindow = require "../lib/singleton-window"
 
 {SlidingTimeWindow} = require "../lib/sliding-window"
 
+{MemoryStore} = require "../lib/store"
+
 describe "Window", ->
+
+  it "should use a memory store by default", ->
+    window = new Window()
+    val = window.store instanceof MemoryStore
+    val.should.eql true
 
   it "should emit data", (done) ->
     window = new Window()
@@ -52,13 +59,28 @@ describe "Window", ->
         val: 2
 
 
-    it "should contain one element", () ->
+    it "should contain one element", (done) ->
       singletonWindow = new SingletonWindow()
       singletonWindow.process
         val: 2
 
-      singletonWindow.events().length.should.eql 1
-      singletonWindow.events()[0].val.should.eql 2
+      _c = 0
+      cb = () => if ++_c is 2 then done()
+
+      singletonWindow.on "data:pop", (elements) ->
+        should.exist elements
+        elements.length.should.eql 1
+        elements[0].val.should.eql 2
+        cb()
+
+      singletonWindow.on "data:push", (elements) ->
+        should.exist elements
+        elements.length.should.eql 1
+        elements[0].val.should.eql 1
+        cb()
+
+      singletonWindow.process
+        val: 1
 
 
 
@@ -94,8 +116,20 @@ describe "Window", ->
         val: 2
 
 
-    it "should buffer data during time window", () ->
+    it "should buffer data during the time window", (done) ->
       slidingTimeWindow = new SlidingTimeWindow 100
+
+      t = Date.now()
+
+      slidingTimeWindow.on "data:pop", (elements) ->
+        if Date.now() - t < 100 then throw new Error "Data popped too early"
+        if not popped
+          popped = true
+          done()
+
+      slidingTimeWindow.on "data:push", (elements) ->
+        should.exist elements
+        elements.length.should.eql 1
 
       slidingTimeWindow.process
         val: 1
@@ -103,14 +137,12 @@ describe "Window", ->
       slidingTimeWindow.process
         val: 2
 
-      events = slidingTimeWindow.events()
-      events.length.should.eql 2
-      events[0].val.should.eql 1
-
 
 
     it "should purge data after time has expired", (done) ->
       slidingTimeWindow = new SlidingTimeWindow 100, 10
+
+      t = Date.now()
 
       slidingTimeWindow.process
         val: 2
@@ -120,9 +152,12 @@ describe "Window", ->
           val: 1
       , 30
 
-      setTimeout () ->
-        events = slidingTimeWindow.events()
-        events.length.should.eql 1
-        events[0].val.should.eql 1
-        done()
-      , 120
+      slidingTimeWindow.on "data:pop", (elements) ->
+        diff = Date.now() - t
+        if diff >= 100 and diff <= 130
+          elements.length.should.eql 1
+          elements[0].val.should.eql 2
+        else
+          elements.length.should.eql 1
+          elements[0].val.should.eql 1
+          done()

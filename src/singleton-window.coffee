@@ -8,22 +8,19 @@ Window  = require './window'
 ###
 class SingletoneWindow extends Window
 
+  _key : "singletonwindow"
+
   constructor : () ->
     super()
-    @_event = null
-
-  events: () ->
-    # return events in the window
-    if @_event then return [@_event] else return []
-
-  size : () -> if @_event then return 1 else return 0
 
   process : (data) ->
-    # trigger pop event
-    if @_event then @emit "data:pop", [@_event]
-    # set current event pointer
-    @_event = data
-    # trigger push event
-    @emit "data:push", [data]
+    @store.get @_key, (error, value) =>
+      throw error if error
+
+      if value then @emit "data:pop", [value]
+
+      @store.put @_key, data, (error, value) =>
+        # trigger push event
+        @emit "data:push", [data]
 
 module.exports = SingletoneWindow

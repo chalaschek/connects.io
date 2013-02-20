@@ -14,7 +14,7 @@ describe "Stats", ->
   it "should use a memory store by default", ->
     stat = new Stat {aggregateField: "id", outputName: _name}
     val = stat.store instanceof MemoryStore
-
+    val.should.eql true
 
   describe "Sum Stats", ->
     it "should add stats when accumulated", (done) ->

@@ -8,15 +8,10 @@ Window  = require './window'
 ###
 class SlidingWindow extends Window
 
+  _key : "slidingwindow"
+
   constructor : (@n) ->
-    @_window = []
-    @_index = {}
     super()
-
-  events: () ->
-    return @_window
-
-  size : () -> return @_window.length
 
   purge : () -> throw new Error "Method must be implemented"
 
@@ -25,6 +20,8 @@ class SlidingWindow extends Window
 
 
 class SlidingTimeWindow extends SlidingWindow
+
+  _key : "slidingtimewindow"
 
   _defaultPurgeInterval : 100
 
@@ -39,37 +36,43 @@ class SlidingTimeWindow extends SlidingWindow
       @purge()
     , @windowPurgeInterval
 
-  events: () ->
-    return @_window.map (ev) -> return ev.data
-
   purge : () ->
     # TODO: migrate to b+ index
     now = Date.now()
-    _events = []
-    # find events to remove
-    for entry, i in @_window
-      if now - entry.timestamp >= @n
-        _events.push entry.data
-      else
-        break
+    @store.get @_key, (error, _window=[]) =>
+      throw error if error
 
-    if _events.length > 0
-      # trigger push event
-      # remove from events
-      @_window = @_window.slice i
-      @emit "data:pop", _events
-  
+      _events = []
+      # find events to remove
+      for entry, i in _window
+        if now - entry.timestamp >= @n
+          _events.push entry.data
+        else
+          break
+
+      if _events.length > 0
+        # trigger push event
+        # remove from events
+        _window = _window.slice i
+        @store.put @_key, _window, (error) =>
+          throw error if error
+          @emit "data:pop", _events
+
+
   process : (data) ->
-    #console.log "sliding window processing data"
-    # add to event queue
-    @_window.push
-      data: data
-      timestamp: Date.now()
+    @store.get @_key, (error, _window=[]) =>
+      throw error if error
+      # add to event queue
+      _window.push
+        data: data
+        timestamp: Date.now()
 
-    # TODO: index data
+      # TODO: index data
 
-    # trigger push event
-    @emit "data:push", [data]
+      @store.put @_key, _window, (error) =>
+        throw error if error
+        # trigger push event
+        @emit "data:push", [data]
 
 
 

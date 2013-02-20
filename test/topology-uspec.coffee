@@ -104,7 +104,6 @@ describe "Topology", ->
 
     stream = topology.get "agger"
     stream.sink (data) ->
-      console.log data
       should.exist data
       data.sum.should.eql 1
       done()

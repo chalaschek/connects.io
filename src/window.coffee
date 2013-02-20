@@ -1,4 +1,5 @@
 {EventEmitter}  = require 'events'
+{MemoryStore}   = require './store'
 
 ###
 #
@@ -8,12 +9,11 @@
 ###
 class Window extends EventEmitter
 
-  constructor : ( ) ->
+  constructor : ( config={} ) ->
+    {@store} = config
+    # default to memory store
+    @store = new MemoryStore() unless @store
     super()
-
-  events: () -> throw new Error "Method must be implemented"
-
-  size: () -> throw new Error "Method must be implemented"
 
   process : (data) -> throw new Error "Method must be implemented"
 
