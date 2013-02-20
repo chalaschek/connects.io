@@ -138,7 +138,6 @@ describe "Window", ->
         val: 2
 
 
-
     it "should purge data after time has expired", (done) ->
       slidingTimeWindow = new SlidingTimeWindow 100, 10
 
@@ -154,7 +153,7 @@ describe "Window", ->
 
       slidingTimeWindow.on "data:pop", (elements) ->
         diff = Date.now() - t
-        if diff >= 100 and diff <= 130
+        if diff < 130
           elements.length.should.eql 1
           elements[0].val.should.eql 2
         else
