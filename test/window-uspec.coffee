@@ -110,7 +110,7 @@ describe "Window", ->
 
 
     it "should purge data after time has expired", (done) ->
-      slidingTimeWindow = new SlidingTimeWindow 100, 50
+      slidingTimeWindow = new SlidingTimeWindow 100, 10
 
       slidingTimeWindow.process
         val: 2
