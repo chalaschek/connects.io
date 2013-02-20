@@ -1,3 +1,12 @@
+0.0.3 / 2013-02-20
+==================
+
+  * Store framework added
+  * Stats migrated to stores
+  * Windows migrated to stores
+  * Aggregator framework refactored
+
+
 0.0.2 / 2013-02-11
 ==================
 
